@@ -11,25 +11,10 @@ namespace AESEncryptionNet
     {
         public byte[] Encrypt(byte[] inputData, byte[] key, byte[] iv, AESCipherMode cipherMode)
         {
-            SymmetricKeyAlgorithmProvider keyAlgorithmProvider;
-
-            switch (cipherMode)
-            {
-                case AESCipherMode.CBC:
-                    keyAlgorithmProvider = SymmetricKeyAlgorithmProvider.OpenAlgorithm(SymmetricAlgorithmNames.AesCbc);
-                    break;
-
-                case AESCipherMode.ECB:
-                    keyAlgorithmProvider = SymmetricKeyAlgorithmProvider.OpenAlgorithm(SymmetricAlgorithmNames.AesEcb);
-                    break;
-
-                default:
-                    throw new ArgumentException($"Unsupported AESCipherMode: {cipherMode}");
-            }
-
+            var keyAlgorithmProvider = SymmetricKeyAlgorithmProvider.OpenAlgorithm(cipherMode.ToSymmetricAlgorithmName());
             var cryptoKey = keyAlgorithmProvider.CreateSymmetricKey(CryptographicBuffer.CreateFromByteArray(key));
             var buffer = CryptographicBuffer.CreateFromByteArray(inputData);
-            var encrypted = CryptographicEngine.Encrypt(cryptoKey, buffer, iv.AsBuffer());
+            var encrypted = CryptographicEngine.Encrypt(cryptoKey, buffer, cipherMode == AESCipherMode.ECB || cipherMode == AESCipherMode.ECB_PKCS7 ? null : iv.AsBuffer());
 
             return encrypted.ToArray();
         }
@@ -37,25 +22,10 @@ namespace AESEncryptionNet
 
         public byte[] Decrypt(byte[] inputData, byte[] key, byte[] iv, AESCipherMode cipherMode)
         {
-            SymmetricKeyAlgorithmProvider keyAlgorithmProvider;
-
-            switch (cipherMode)
-            {
-                case AESCipherMode.CBC:
-                    keyAlgorithmProvider = SymmetricKeyAlgorithmProvider.OpenAlgorithm(SymmetricAlgorithmNames.AesCbc);
-                    break;
-
-                case AESCipherMode.ECB:
-                    keyAlgorithmProvider = SymmetricKeyAlgorithmProvider.OpenAlgorithm(SymmetricAlgorithmNames.AesEcb);
-                    break;
-
-                default:
-                    throw new ArgumentException($"Unsupported AESCipherMode: {cipherMode}");
-            }
-
+            var keyAlgorithmProvider = SymmetricKeyAlgorithmProvider.OpenAlgorithm(cipherMode.ToSymmetricAlgorithmName());
             var cryptoKey = keyAlgorithmProvider.CreateSymmetricKey(CryptographicBuffer.CreateFromByteArray(key));
             var buffer = CryptographicBuffer.CreateFromByteArray(inputData);
-            var decrypted = CryptographicEngine.Decrypt(cryptoKey, buffer, iv.AsBuffer());
+            var decrypted = CryptographicEngine.Decrypt(cryptoKey, buffer, cipherMode == AESCipherMode.ECB || cipherMode == AESCipherMode.ECB_PKCS7 ? null : iv.AsBuffer());
 
             return decrypted.ToArray();
         }
